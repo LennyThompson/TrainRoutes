@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrainRoutes", "TrainRoutes\TrainRoutes.csproj", "{398F6527-51E0-4407-ADCF-9176FBD5712C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrainRouting", "TrainRouting\TrainRouting.csproj", "{20E625D9-98D3-425E-B0D3-F27C8BD7AB77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTrainRouting", "TestTrainRouting\TestTrainRouting.csproj", "{F0FAFD32-53E5-4AB3-A773-AFDA2ACEE40D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{20E625D9-98D3-425E-B0D3-F27C8BD7AB77} = {20E625D9-98D3-425E-B0D3-F27C8BD7AB77}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{398F6527-51E0-4407-ADCF-9176FBD5712C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{398F6527-51E0-4407-ADCF-9176FBD5712C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{398F6527-51E0-4407-ADCF-9176FBD5712C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{398F6527-51E0-4407-ADCF-9176FBD5712C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20E625D9-98D3-425E-B0D3-F27C8BD7AB77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20E625D9-98D3-425E-B0D3-F27C8BD7AB77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20E625D9-98D3-425E-B0D3-F27C8BD7AB77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20E625D9-98D3-425E-B0D3-F27C8BD7AB77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0FAFD32-53E5-4AB3-A773-AFDA2ACEE40D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0FAFD32-53E5-4AB3-A773-AFDA2ACEE40D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0FAFD32-53E5-4AB3-A773-AFDA2ACEE40D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0FAFD32-53E5-4AB3-A773-AFDA2ACEE40D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
