@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace TrainRouting
 {
+    // A destination on the network - has a name and set of routes to destinations reachable from this destination
     public class Destination
     {
         public Destination(string strName)
@@ -89,6 +90,7 @@ namespace TrainRouting
         }
     }
 
+    // Route - simply a distance to a destination
     public class Route
     {
         public Route(Destination destTo, int nDistance)
@@ -109,7 +111,8 @@ namespace TrainRouting
             set;
         }
     }
-
+    
+    // Container for Destination and Route objects, and searching routes.
     public class TrainRouter
     {
         public TrainRouter()
@@ -142,6 +145,7 @@ namespace TrainRouting
             }
         }
 
+        // Find a specific route in the form of "X-Y-Z"
         public bool findRoute(string strRouteDescription)
         {
             IEnumerable<string> listDestinations = destinationsFromString(strRouteDescription);
@@ -162,6 +166,7 @@ namespace TrainRouting
             return false;
         }
 
+        // Measure a specific route
         public int measureRoute(string strRouteDescription)
         {
             IEnumerable<string> listDestinations = destinationsFromString(strRouteDescription);
@@ -181,6 +186,8 @@ namespace TrainRouting
             }
             return -1;
         }
+
+        // Find all routes that satisfy the test function - essentially a visitor
 
         public void findAllRoutes(string strRouteDescription, Func<string, Route, List<Route>, bool> fnTestRoute)
         {
