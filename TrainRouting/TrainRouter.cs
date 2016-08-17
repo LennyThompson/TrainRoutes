@@ -28,6 +28,15 @@ namespace TrainRouting
             set;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Destination)
+            {
+                return this.Name.CompareTo(((Destination)obj).Name) == 0;
+            }
+            return false;
+        }
+
         public void addRoute(Destination destTo, int nDistance)
         {
             Routes.Add(destTo.Name, new Route(destTo, nDistance));
@@ -50,14 +59,15 @@ namespace TrainRouting
             return true;
         }
 
-        public bool hasRouteTo(string strDestination)
+        private static int DEPTH_LIMIT = 50;
+        public bool hasRouteTo(Destination destTo, int nDepth)
         {
-            if (Routes.ContainsKey(strDestination))
+            if (Routes.ContainsKey(destTo.Name))
             {
                 return true;
             }
 
-            return Routes.Where(route => hasRouteTo(strDestination)).Count() > 0;
+            return Routes.Where(route => nDepth < DEPTH_LIMIT && route.Value.To.hasRouteTo(destTo, nDepth + 1)).Count() > 0;
         }
 
         internal int measureRoute(IEnumerator<string> itDestination, int nTotalDistance)
@@ -88,6 +98,12 @@ namespace TrainRouting
                 }
             }
         }
+
+        internal IEnumerable<List<Route>> findAllRoutesAlt(Destination destTo, Func<List<Route>, bool> routePredicate)
+        {
+            return Routes.Select(keyPair => keyPair.Value)
+                .SelectMany(route => route.buildRouteTo(destTo, new List<Route>(), routePredicate));
+        }
     }
 
     // Route - simply a distance to a destination
@@ -110,8 +126,46 @@ namespace TrainRouting
             get;
             set;
         }
+
+        private static int DEPTH_LIMIT = 50;
+        public bool hasRouteTo(Destination destTo, int nDepth)
+        {
+            if (To == destTo)
+            {
+                return true;
+            }
+
+            return To.Routes.Select(keyPair => keyPair.Value).Where(route => nDepth < DEPTH_LIMIT && route.hasRouteTo(destTo, nDepth + 1)).Count() > 0;
+        }
+
+        public List<List<Route>> buildRouteTo(Destination destTo, List<Route> listRouteToHere, Func<List<Route>, bool> routePredicate)
+        {
+            List<List<Route>> listRoutes = new List<List<Route>>();
+            listRouteToHere.Add(this);
+            if (To == destTo)
+            {
+                listRoutes.Add(listRouteToHere);
+                if(!routePredicate(listRouteToHere))
+                {
+                    return listRoutes;
+                }
+            }
+
+            if (hasRouteTo(destTo, listRouteToHere.Count))
+            {
+                listRoutes.AddRange(To.Routes.Select(keyPair => keyPair.Value)
+                .Where(route => listRouteToHere.Count < DEPTH_LIMIT && route.hasRouteTo(destTo, listRouteToHere.Count))
+                .SelectMany
+                (
+                    route =>
+                        route.buildRouteTo(destTo, listRouteToHere.Select(routeToHere => routeToHere).ToList(), routePredicate)
+                )
+                .ToList());
+            }
+            return listRoutes;
+        }
     }
-    
+
     // Container for Destination and Route objects, and searching routes.
     public class TrainRouter
     {
@@ -191,7 +245,6 @@ namespace TrainRouting
 
         public void findAllRoutes(string strRouteDescription, Func<string, Route, List<Route>, bool> fnTestRoute)
         {
-            List<List<Route>> listAllRoutes = new List<List<Route>>();
             IEnumerable<string> listDestinations = destinationsFromString(strRouteDescription);
             if (Enumerable.Count(listDestinations) > 0)
             {
@@ -214,6 +267,39 @@ namespace TrainRouting
             }
         }
 
+        // Find all routes that staisfy the predicate - simpler implementation than findAllRoutes
+
+        public IEnumerable<List<Route>> findAllRoutesAlt(string strRouteDescription, Func<List<Route>, bool> routePredicate)
+        {
+            List<List<Route>> listAllRoutes = new List<List<Route>>();
+            IEnumerable<string> listDestinations = destinationsFromString(strRouteDescription);
+            if (Enumerable.Count(listDestinations) > 0)
+            {
+                IEnumerator<string> itDestination = listDestinations.GetEnumerator();
+
+                if
+                (
+                    itDestination.MoveNext()
+                    &&
+                    m_mapRoutes.ContainsKey(itDestination.Current)
+                )
+                {
+                    Destination destStart = m_mapRoutes[itDestination.Current];
+                    if 
+                    (
+                        itDestination.MoveNext()
+                        &&
+                        m_mapRoutes.ContainsKey(itDestination.Current)
+                    )
+                    {
+                        return destStart.findAllRoutesAlt(m_mapRoutes[itDestination.Current], routePredicate);
+                    }
+                }
+            }
+            return listAllRoutes;
+        }
+
+
         private static IEnumerable<string> destinationsFromString(string strRouteDescription)
         {
             Regex regexDestinationSearch = new Regex("((.)-?)");
@@ -228,5 +314,34 @@ namespace TrainRouting
         }
 
         private Dictionary<string, Destination> m_mapRoutes;
+
+        public bool hasRouteTo(string strRouteDescription)
+        {
+            IEnumerable<string> listDestinations = destinationsFromString(strRouteDescription);
+            if (Enumerable.Count(listDestinations) > 0)
+            {
+                IEnumerator<string> itDestination = listDestinations.GetEnumerator();
+
+                if
+                (
+                    itDestination.MoveNext()
+                    &&
+                    m_mapRoutes.ContainsKey(itDestination.Current)
+                )
+                {
+                    Destination destStart = m_mapRoutes[itDestination.Current];
+                    if
+                    (
+                        itDestination.MoveNext()
+                        &&
+                        m_mapRoutes.ContainsKey(itDestination.Current)
+                    )
+                    {
+                        return destStart.hasRouteTo(m_mapRoutes[itDestination.Current], 1);
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

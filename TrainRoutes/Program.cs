@@ -31,136 +31,58 @@ namespace TrainRoutes
 
             // Question 6
 
-            List<List<Route>> listAllRoutes = new List<List<Route>>();
-            trainRouter.findAllRoutes
+            writeQuestionResponse
                 (
-                    "C-C",
-                    (finalDest, route, listRoute) =>
-                    {
-                        if (listRoute.Count > 3)
-                        {
-                            return false;
-                        }
-                        listRoute.Add(route);
-                        if (route.To.Name.CompareTo(finalDest) == 0)
-                        {
-                            listAllRoutes.Add(listRoute);
-                        }
-                        return true;
-                    }
+                    trainRouter.findAllRoutesAlt("C-C", routeList => routeList.Count <= 3)
+                    .Where(routeList => routeList.Count <= 3).Count(),
+                    ++nQuestion
                 );
-            List<List<Route>> listShortRoutes = listAllRoutes.Where(route => route.Count <= 3).ToList();
-            writeQuestionResponse(listShortRoutes.Count, ++nQuestion);
 
             // Question 7
 
             int nMaxStops = 4;
-            listAllRoutes.Clear();
-            trainRouter.findAllRoutes
+            writeQuestionResponse
                 (
-                    "A-C",
-                    (finalDest, route, listRoute) =>
-                    {
-                        listRoute.Add(route);
-                        if (listRoute.Count > nMaxStops)
-                        {
-                            return false;
-                        }
-                        if (route.To.Name.CompareTo(finalDest) == 0)
-                        {
-                            listAllRoutes.Add(listRoute);
-                        }
-                        return true;
-                    }
+                    trainRouter.findAllRoutesAlt("A-C", routeList => routeList.Count <= nMaxStops)
+                    .Where(routeList => routeList.Count == nMaxStops).Count(),
+                    ++nQuestion
                 );
-            List<List<Route>> listSelectRoutes = listAllRoutes.Distinct().Where(route => route.Count == nMaxStops).ToList();
-            writeQuestionResponse(listSelectRoutes.Count, ++nQuestion);
 
             // Question 8
 
             int nShortestRoute = Int32.MaxValue;
-            trainRouter.findAllRoutes
-                (
-                    "A-C",
-                    (finalDest, route, listRoute) =>
-                    {
-                        if (listRoute.Where(routePart => routePart.To.Name.CompareTo(route.To.Name) == 0).Count() > 0)
-                        {
-                            return false;
-                        }
-                        listRoute.Add(route);
-                        int nRouteLength = listRoute.Select(routePart => routePart.Distance).Sum();
-                        if (nRouteLength >= nShortestRoute)
-                        {
-                            return false;
-                        }
-                        if (route.To.Name.CompareTo(finalDest) == 0)
-                        {
-                            if (nShortestRoute > nRouteLength)
-                            {
-                                nShortestRoute = nRouteLength;
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                );
+            Func<List<Route>, bool> fnPredicate = routeList =>
+            {
+                if (routeList.Select(route => route.Distance).Sum() < nShortestRoute)
+                {
+                    nShortestRoute = routeList.Select(route => route.Distance).Sum();
+                    return true;
+                }
+                return false;
+            };
+            trainRouter.findAllRoutesAlt("A-C", fnPredicate)
+                            .Distinct()
+                            .Count();
             writeQuestionResponse(nShortestRoute, ++nQuestion);
 
             // Question 9
 
             nShortestRoute = Int32.MaxValue;
-            trainRouter.findAllRoutes
-                (
-                    "B-B",
-                    (finalDest, route, listRoute) =>
-                    {
-                        if (listRoute.Where(routePart => routePart.To.Name.CompareTo(route.To.Name) == 0).Count() > 0)
-                        {
-                            return false;
-                        }
-                        listRoute.Add(route);
-                        int nRouteLength = listRoute.Select(routePart => routePart.Distance).Sum();
-                        if (nRouteLength >= nShortestRoute)
-                        {
-                            return false;
-                        }
-                        if (route.To.Name.CompareTo(finalDest) == 0)
-                        {
-                            if (nShortestRoute > nRouteLength)
-                            {
-                                nShortestRoute = nRouteLength;
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                );
+            trainRouter.findAllRoutesAlt("B-B", fnPredicate)
+                            .Distinct()
+                            .Count();
             writeQuestionResponse(nShortestRoute, ++nQuestion);
 
             // Question 10
 
-            int nRouteCount = 0;
-            trainRouter.findAllRoutes
+            writeQuestionResponse
                 (
-                    "C-C", 
-                    (finalDest, route, listRoute) =>
-                    {
-                        bool bIsSameRoute = route.To.Name.CompareTo(finalDest) == 0;
-                        listRoute.Add(route);
-                        int nRouteLength = listRoute.Select(routePart => routePart.Distance).Sum();
-                        if (nRouteLength >= 30)
-                        {
-                            return false;
-                        }
-                        if (bIsSameRoute)
-                        {
-                            ++nRouteCount;
-                        }
-                        return true;
-                    }
+                    trainRouter.findAllRoutesAlt("C-C", routeList => routeList.Select(route => route.Distance).Sum() < 30)
+                    .Where(routeList => routeList.Select(route => route.Distance).Sum() < 30)
+                    .Distinct()
+                    .Count(), 
+                    ++nQuestion
                 );
-            writeQuestionResponse(nRouteCount, ++nQuestion);
 
             Console.Write("Type any character: ");
             Console.ReadKey();

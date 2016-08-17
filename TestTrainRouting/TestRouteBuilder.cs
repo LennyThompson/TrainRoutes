@@ -104,9 +104,10 @@ namespace TestTrainRouting
             TrainRouter trainRouter = RouteBuilder.buildRoute(readRoutes, listErrors);
 
             List<List<Route>> listAllRoutes = new List<List<Route>>();
+            int nMaxStops = 3;
             Func<string, Route, List<Route>, bool> fnTestRoute = (finalDest, route, listRoute) =>
             {
-                if (listRoute.Count > 3)
+                if (listRoute.Count > nMaxStops)
                 {
                     return false;
                 }
@@ -121,6 +122,23 @@ namespace TestTrainRouting
             Assert.IsTrue(listAllRoutes.Count >= 3);
             List<List<Route>> listShortRoutes = listAllRoutes.Where(route => route.Count <= 3).ToList();
             Assert.AreEqual(2, listShortRoutes.Count);
+        }
+
+        [TestMethod]
+        public void TestFindRoutesCC_Alt()
+        {
+            string strInputRoute = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
+            TextReader readRoutes = new StringReader(strInputRoute);
+
+            List<string> listErrors = new List<string>();
+            TrainRouter trainRouter = RouteBuilder.buildRoute(readRoutes, listErrors);
+            int nMaxStops = 3;
+
+            Assert.AreEqual(2, trainRouter.findAllRoutesAlt("C-C", routeList => routeList.Count <= nMaxStops)
+                .Distinct()
+                .Where(route => route.Count <= 3)
+                .Count());
+
         }
 
         [TestMethod]
@@ -157,6 +175,28 @@ namespace TestTrainRouting
             Assert.IsTrue(listAllRoutes.Count > 0);
             listSelectRoutes = listAllRoutes.Distinct().Where(route => route.Count == 4).ToList();
             Assert.AreEqual(1, listSelectRoutes.Count);
+        }
+
+        [TestMethod]
+        public void TestFindRoutesAC_Alt()
+        {
+            string strInputRoute = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
+            TextReader readRoutes = new StringReader(strInputRoute);
+
+            List<string> listErrors = new List<string>();
+            TrainRouter trainRouter = RouteBuilder.buildRoute(readRoutes, listErrors);
+            int nMaxStops = 4;
+            Assert.AreEqual(3, trainRouter.findAllRoutesAlt("A-C", routeList => routeList.Count <= nMaxStops)
+                .Distinct()
+                .Where(route => route.Count == 4)
+                .Count());
+
+            nMaxStops = 10;
+            Assert.AreEqual(1, trainRouter.findAllRoutesAlt("B-B", routeList => routeList.Count <= nMaxStops)
+                .Distinct()
+                .Where(route => route.Count == 4)
+                .Count());
+
         }
 
         [TestMethod]
@@ -201,6 +241,36 @@ namespace TestTrainRouting
         }
 
         [TestMethod]
+        public void TestFindShortestRouteAC_Alt()
+        {
+            string strInputRoute = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
+            TextReader readRoutes = new StringReader(strInputRoute);
+
+            List<string> listErrors = new List<string>();
+            TrainRouter trainRouter = RouteBuilder.buildRoute(readRoutes, listErrors);
+            int nShortestRoute = Int32.MaxValue;
+            Func<List<Route>, bool> fnPredicate = routeList =>
+            {
+                if (routeList.Select(route => route.Distance).Sum() < nShortestRoute)
+                {
+                    nShortestRoute = routeList.Select(route => route.Distance).Sum();
+                    return true;
+                }
+                return false;
+            };
+            trainRouter.findAllRoutesAlt("A-C", fnPredicate)
+                .Distinct()
+                .Count();
+            Assert.AreEqual(9, nShortestRoute);
+
+            nShortestRoute = Int32.MaxValue;
+            trainRouter.findAllRoutesAlt("B-B", fnPredicate)
+                .Distinct()
+                .Count();
+            Assert.AreEqual(9, nShortestRoute);
+        }
+
+        [TestMethod]
         public void TestFindRouteCountCC()
         {
             string strInputRoute = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
@@ -226,6 +296,36 @@ namespace TestTrainRouting
             };
             trainRouter.findAllRoutes("C-C", fnTestRoute);
             Assert.AreEqual(7, nRouteCount);
+        }
+
+        [TestMethod]
+        public void TestFindRouteCountCC_Alt()
+        {
+            string strInputRoute = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
+            TextReader readRoutes = new StringReader(strInputRoute);
+
+            List<string> listErrors = new List<string>();
+            TrainRouter trainRouter = RouteBuilder.buildRoute(readRoutes, listErrors);
+            Assert.AreEqual
+                (
+                    7,
+                    trainRouter.findAllRoutesAlt("C-C", routeList => routeList.Select(route => route.Distance).Sum() < 30)
+                    .Where(routeList => routeList.Select(route => route.Distance).Sum() < 30)
+                    .Distinct()
+                    .Count()
+                );
+        }
+
+        [TestMethod]
+        public void TestHasRoute()
+        {
+            string strInputRoute = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
+            TextReader readRoutes = new StringReader(strInputRoute);
+
+            List<string> listErrors = new List<string>();
+            TrainRouter trainRouter = RouteBuilder.buildRoute(readRoutes, listErrors);
+
+            Assert.IsTrue(trainRouter.hasRouteTo("B-B"));
         }
     }
 }
